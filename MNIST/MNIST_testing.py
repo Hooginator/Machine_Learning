@@ -56,17 +56,25 @@ for i in xrange(0,n_dims):
 print (str(dim))
 print(str(dim[0]*dim[1]*dim[2]))
 
-cycle_size = 2
+cycle_size = 10
 cycle_start = 0
-value_size = 1 # size of the input read, will be 1 byte, 0-255
+#value_size = 1 # size of the input read, will be 1 byte, 0-255
 images = []
 
-for i in xrange(cycle_start*cycle_size,cycle_size*(1+cycle_start)):
-    temp =  (cycle_start*cycle_size+i)
-    print(str(int(struct.unpack("b", fileContent[4+n_dims*4+value_size*dim[1]*dim[2]*temp:4+n_dims*4+value_size*dim[1]*dim[2]*(temp+1)])[0])))
-    images.append(int(struct.unpack("b", fileContent[4+n_dims*4+value_size*temp:4+n_dims*4+value_size*(temp+1)])[0]))
-    
+pream = 4+n_dims*4
 
+for i in xrange(cycle_start*cycle_size,cycle_size*(1+cycle_start)):
+    temp =  (cycle_start*cycle_size+i*dim[1]*dim[2])
+    temp_image = np.empty((dim[1],dim[2]))
+    for j in xrange(0,dim[1]):
+        for k in xrange(0,dim[2]):
+            temp_image[j,k] = int(struct.unpack("B", fileContent[pream+temp+j*dim[1]+k:pream+(temp+1)+j*dim[1]+k])[0])
+    images.append(temp_image)
+    #print images[i]
+
+plt.imshow(images[6], cmap=plt.cm.gray_r, interpolation='nearest')
+print images[6]
+plt.show()
 
 #abc = open("train-images.idx3-ubyte",'rb')
 
