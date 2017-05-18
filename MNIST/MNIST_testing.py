@@ -95,18 +95,22 @@ labelFileName = "train-labels.idx1-ubyte"
 
 print (str(time.time()))
 
-totalbatch = 2
+totalbatch = 2000
 batchsize = 100
+success = 0
 for batchnumber in xrange(totalbatch):
     start = time.time()
     #images = []
     [images,labels] = loadImages(fileName,labelFileName,batchnumber,batchsize)
-    predictor = svm.SVC(gamma = 0.01, C = 100.)
+    predictor = svm.SVC(gamma = 0.1, C = 100.)
     predictor.fit(images[:-1], labels[:-1])
     ans = predictor.predict(images[-1:])
     #[images,labels] = [None,None]
     stop = time.time()
-    print "Gen " + str(batchnumber) + " Pre: " +str(ans) + " Tar: " +str(labels[-1]) + " Time: " + str(stop-start)
+    if(ans[0] == labels[-1]):
+        print "Got it: " +str(success) + " out of " + str(batchnumber) + "  " + str(float(success) /float(batchnumber+1))
+        success += 1
+    #print "Gen " + str(batchnumber) + " Pre: " +str(ans) + " Tar: " +str(labels[-1]) + " Time: " + str(stop-start)
 #print len(images)
 
 # Test print 
