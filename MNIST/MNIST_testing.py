@@ -17,7 +17,7 @@ import numpy as np
 import time
 
 # Import datasets, classifiers and performance metrics
-from sklearn import datasets, svm, metrics
+from sklearn import datasets, linear_model, metrics
 
 # Get loading from external dataset ability
 #import pandas as pd+5
@@ -95,24 +95,23 @@ labelFileName = "train-labels.idx1-ubyte"
 
 print (str(time.time()))
 
-totalbatch = 2000
+totalbatch = 10000
 batchsize = 100
 success = 0
+predictor = linear_model.LogisticRegression(solver = 'newton-cg')
 for batchnumber in xrange(totalbatch):
     start = time.time()
     #images = []
     [images,labels] = loadImages(fileName,labelFileName,batchnumber,batchsize)
-    predictor = svm.SVC(gamma = 0.1, C = 100.)
     predictor.fit(images[:-1], labels[:-1])
     ans = predictor.predict(images[-1:])
-    #[images,labels] = [None,None]
     stop = time.time()
     if(ans[0] == labels[-1]):
-        print "Got it: " +str(success) + " out of " + str(batchnumber) + "  " + str(float(success) /float(batchnumber+1))
+        print "Got it: " +str(success) + " out of " + str(batchnumber) + "  " + str(float(success+1) /float(batchnumber+1))
         success += 1
     #print "Gen " + str(batchnumber) + " Pre: " +str(ans) + " Tar: " +str(labels[-1]) + " Time: " + str(stop-start)
 #print len(images)
-
+abc =  predictor.support_vectors_
 # Test print 
 printstuff()
 
