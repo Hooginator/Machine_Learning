@@ -31,12 +31,24 @@ def printstuff():
     maxPlot = 5
     for i in xrange(0,maxPlot):
         # Re square images2
-        images[i+50].resize(28,28)
+        images[i+5].resize(28,28)
         plt.subplot(1,maxPlot,i)
-        plt.imshow(images[i+50], cmap=plt.cm.gray_r, interpolation='nearest')
-        plt.title( str(labels[i+50]) )
+        plt.imshow(images[i+5], cmap=plt.cm.gray_r, interpolation='nearest')
+        plt.title( str(labels[i+5]) )
         plt.show()
 
+def loadPreamble(fileName):
+    with open(fileName, mode='rb') as file: # b is important -> binary
+        fileContent = file.read()
+    
+    n_dims = struct.unpack("b", fileContent[3])[0]
+    dim = []
+    for i in xrange(0,n_dims):
+        # Big endian data, therefore you need the   >  in front of the i
+        dim.append( int(struct.unpack(">i", fileContent[4+4*i:4+4*(i+1)])[0]) )
+
+    return dim    
+    
 def loadImages(fileName,labelFileName,batchnumber,batchsize):
     with open(fileName, mode='rb') as file: # b is important -> binary
         fileContent = file.read() 
@@ -87,20 +99,26 @@ def loadImages(fileName,labelFileName,batchnumber,batchsize):
 
 
 
+############################ LEARNING #########################################
 
 # Load training data
 
 fileName = "train-images.idx3-ubyte"
 labelFileName = "train-labels.idx1-ubyte"
 
+dimensions = loadPreamble(fileName)
+
 print (str(time.time()))
 
-totalbatch = 10000
-batchsize = 100
+totalbatch = 10
+batchsize = 1000
 success = 0
 predictor = linear_model.LogisticRegression(solver = 'newton-cg')
 for batchnumber in xrange(totalbatch):
     start = time.time()
+    if(batchnumber * batchsize >= dimensions[0]):
+        print "Done"
+        break
     #images = []
     [images,labels] = loadImages(fileName,labelFileName,batchnumber,batchsize)
     predictor.fit(images[:-1], labels[:-1])
@@ -111,10 +129,24 @@ for batchnumber in xrange(totalbatch):
         success += 1
     #print "Gen " + str(batchnumber) + " Pre: " +str(ans) + " Tar: " +str(labels[-1]) + " Time: " + str(stop-start)
 #print len(images)
-abc =  predictor.support_vectors_
+#abc =  predictor.support_vectors_
 # Test print 
 printstuff()
 
+############################ TESTING ##########################################
+
+testFile = "t10k-images.idx3-ubyte"
+testLabel = "t10k-labels.idx1-ubyte"
+
+testStart = 0
+testSize = 1000
+testSuccess = 0
+[images,labels] = loadImages(testFile,testLabel,testStart,testSize)
+for i in xrange(testStart , testStart+testSize ):    
+    ans = predictor.predict([images[i]])
+    if(ans[0] == labels[i]):
+        testSuccess += 1
+        print "Victory # " +str(testSuccess) + "  |  "+ str(float( testSuccess / (i+1.)))
 #abc = open("train-images.idx3-ubyte",'rb')
 
 #test_set = cPickle.load(abc)
